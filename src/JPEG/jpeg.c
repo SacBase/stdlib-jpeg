@@ -85,8 +85,8 @@ void SAC_JPEG_jpeg2array( SAC_ND_PARAM_out( array_nt, int),
   for(int i = 0; i < h; i++) {
     (void) jpeg_read_scanlines(&cinfo, buffer, 1);
     for(int j = 0; j < w; j++) {
-      for(int k = 0; k < d; k++) {
-        data[i*(w*d)+j*d+k] = GETJSAMPLE(buffer[0][j*d+k]);
+      for(int k = 0; k < 3; k++) {
+        data[i*(w*3)+j*3+k] = GETJSAMPLE(buffer[0][j*3+k]);
       }
     }
   }
@@ -137,8 +137,6 @@ void SAC_JPEG_array2jpeg( FILE *fp,
   jpeg_set_quality(&cinfo, quality, TRUE);
 
   jpeg_start_compress(&cinfo, TRUE);
-
-  row_stride = w*3;
 
   buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, w*3, 1);
 
