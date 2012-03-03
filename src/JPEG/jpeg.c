@@ -13,19 +13,17 @@
  * TODO: cleanup!
  */
 struct my_error_mgr {
-    struct jpeg_error_mgr pub;  /* "public" fields */
-      jmp_buf setjmp_buffer;  /* for return to caller */
+  struct jpeg_error_mgr pub;    /* "public" fields */
+  jmp_buf setjmp_buffer;        /* for return to caller */
 };
 
-typedef struct my_error_mgr * my_error_ptr;
+typedef struct my_error_mgr *my_error_ptr;
 
-METHODDEF(void)
-my_error_exit (j_common_ptr cinfo)
+METHODDEF(void) my_error_exit(j_common_ptr cinfo)
 {
-    my_error_ptr myerr = (my_error_ptr) cinfo->err;
-      (*cinfo->err->output_message) (cinfo);
-
-        longjmp(myerr->setjmp_buffer, 1); 
+  my_error_ptr myerr = (my_error_ptr) cinfo->err;
+  (*cinfo->err->output_message) (cinfo);
+  longjmp(myerr->setjmp_buffer, 1);
 }
 
 
@@ -35,8 +33,8 @@ my_error_exit (j_common_ptr cinfo)
 /*
  * Read a JPEG file from disk
  */
-void SAC_JPEG_jpeg2array( SAC_ND_PARAM_out( array_nt, int),
-                          FILE *fp)
+void SAC_JPEG_jpeg2array( SAC_ND_PARAM_out(array_nt, int),
+                          FILE * fp)
 {
   int *data;
 
@@ -54,64 +52,72 @@ void SAC_JPEG_jpeg2array( SAC_ND_PARAM_out( array_nt, int),
   /*
    * Check for errors
    */
-  if (setjmp(jerr.setjmp_buffer)) {
+  if (setjmp(jerr.setjmp_buffer))
+  {
     jpeg_destroy_decompress(&cinfo);
-    SAC_RuntimeError( "Error when reading JPEG file!");
+    SAC_RuntimeError("SAC_JPEG_jpeg2array: Error when reading JPEG file!");
     return;
   }
+
+  jpeg_create_decompress(&cinfo);
+  jpeg_stdio_src(&cinfo, fp);
+  jpeg_read_header(&cinfo, TRUE);
 
   /*
    * Check for the number of colors
    */
-  if (cinfo.output_components != 3) {
-    SAC_RuntimeError( "Invalid number of colors!\n");
+  if (cinfo.num_components != 3)
+  {
+    SAC_RuntimeError("SAC_JPEG_jpeg2array: Invalid number of colors (%d)!\n",
+                     cinfo.num_components);
+    return;
   }
 
-
-  jpeg_create_decompress(&cinfo);
-  jpeg_stdio_src(&cinfo, fp);
-  (void) jpeg_read_header(&cinfo, TRUE);
-  (void) jpeg_start_decompress(&cinfo);
+  jpeg_start_decompress(&cinfo);
 
   w = cinfo.output_width;
   h = cinfo.output_height;
 
-  buffer = (*cinfo.mem->alloc_sarray) ((j_common_ptr) &cinfo, JPOOL_IMAGE, w*3, 1);
+  buffer =
+    (*cinfo.mem->alloc_sarray) ((j_common_ptr) & cinfo, JPOOL_IMAGE, w * 3, 1);
   data = malloc(sizeof(int) * w * h * 3);
 
   /*
    * Read in the entire JPEG image
    */
-  for(int i = 0; i < h; i++) {
-    (void) jpeg_read_scanlines(&cinfo, buffer, 1);
-    for(int j = 0; j < w; j++) {
-      for(int k = 0; k < 3; k++) {
-        data[i*(w*3)+j*3+k] = GETJSAMPLE(buffer[0][j*3+k]);
+  for (int i = 0; i < h; i++)
+  {
+    jpeg_read_scanlines(&cinfo, buffer, 1);
+    for (int j = 0; j < w; j++)
+    {
+      for (int k = 0; k < 3; k++)
+      {
+        data[i * w * 3 + j * 3 + k] = GETJSAMPLE(buffer[0][j * 3 + k]);
       }
     }
   }
 
-  (void) jpeg_finish_decompress(&cinfo);
+  jpeg_finish_decompress(&cinfo);
 
   jpeg_destroy_decompress(&cinfo);
 
-  SAC_ND_DECL__DATA( ret_nt, int, )
-  SAC_ND_DECL__DESC( ret_nt, )
-  int SAC_ND_A_MIRROR_DIM( ret_nt) = 3;
-  SAC_ND_ALLOC__DESC( ret_nt, dims)
-  SAC_ND_SET__RC( ret_nt, 1)
-  SAC_ND_A_DESC_SHAPE( ret_nt, 0) = h;
-  SAC_ND_A_DESC_SHAPE( ret_nt, 1) = w;
-  SAC_ND_A_DESC_SHAPE( ret_nt, 2) = 3;
-  SAC_ND_A_FIELD( ret_nt) = data;
-  SAC_ND_RET_out( array_nt, ret_nt)
+  SAC_ND_DECL__DATA(ret_nt, int,)
+  SAC_ND_DECL__DESC(ret_nt,)
+  int SAC_ND_A_MIRROR_DIM(ret_nt) = 3;
+  SAC_ND_ALLOC__DESC(ret_nt, dims)
+  SAC_ND_SET__RC(ret_nt, 1)
+  SAC_ND_A_DESC_SHAPE(ret_nt, 0) = h;
+  SAC_ND_A_DESC_SHAPE(ret_nt, 1) = w;
+  SAC_ND_A_DESC_SHAPE(ret_nt, 2) = 3;
+  SAC_ND_A_FIELD(ret_nt) = data;
+  SAC_ND_RET_out(array_nt, ret_nt)
 }
 
 /*
  * Write an image in JPEG format to disk
  */
-void SAC_JPEG_array2jpeg( FILE *fp,
-                          SAC_ND_PARAM_in_nodesc( array_nt, int),
+void SAC_JPEG_array2jpeg( FILE * fp,
+                          SAC_ND_PARAM_in_nodesc(array_nt, int),
                           int shape[2],
                           int quality)
 {
@@ -138,15 +144,18 @@ void SAC_JPEG_array2jpeg( FILE *fp,
 
   jpeg_start_compress(&cinfo, TRUE);
 
-  buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, w*3, 1);
+  buffer =
+    (*cinfo.mem->alloc_sarray) ((j_common_ptr) & cinfo, JPOOL_IMAGE, w * 3, 1);
 
   /*
    * For each row we copy it first to a buffer that can be handled by the jpeg
    * library, after that it is copied to the jpeg file
    */
-  for(int i = 0; i < h; i++) {
-    for (int j = 0; j < w*3; j++) {
-      buffer[0][j] = (JSAMPLE)SAC_ND_A_FIELD(array_nt)[i*w*3+j];
+  for (int i = 0; i < h; i++)
+  {
+    for (int j = 0; j < w * 3; j++)
+    {
+      buffer[0][j] = (JSAMPLE) SAC_ND_A_FIELD(array_nt)[i * w * 3 + j];
     }
     jpeg_write_scanlines(&cinfo, buffer, 1);
   }
