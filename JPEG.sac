@@ -15,7 +15,7 @@ external color[.,.] readJPEGFile( File &stream );
 #pragma linkwith "jpeg"
 #pragma refcounting[0]
 
-external void writeJPEGFile( File &stream , color[.,.] image, int[2] shape, int quality);
+external void writeJPEGFile( File &stream , color[.,.] image, int[2] shp, int quality);
 #pragma effect FileSystem::TheFileSystem
 #pragma linkobj "src/JPEG/jpeg.o"
 #pragma linkname "SAC_JPEG_array2jpeg"
