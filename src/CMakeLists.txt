@@ -62,8 +62,8 @@ FUNCTION (RESOLVE_SAC_DEPENDENCIES f local_sources dep_lst ret_name)
                     HINTS ${search_pathes}
                     NO_DEFAULT_PATH)
                 IF (NOT lib_found)
-                    MESSAGE (FATAL_ERROR 
-                             "Exteral SAC module `${n}' which is required " 
+                    MESSAGE (FATAL_ERROR
+                             "Exteral SAC module `${n}' which is required "
                              "to build `${f}' is not found!")
                 ENDIF ()
             ENDIF ()
@@ -108,18 +108,15 @@ FOREACH (name ${SAC_SRC})
     SET (mod
         "${DLL_BUILD_DIR}/${TARGET_ENV}/${SBI}/lib${dst}Mod${MODEXT}")
     SET (tree
-        "${DLL_BUILD_DIR}/${TARGET_ENV}/${SBI}/lib${dst}Tree${TREE_DLLEXT}")
-    
+        "${DLL_BUILD_DIR}/tree/${TARGET_ENV}/lib${dst}Tree${TREE_DLLEXT}")
+
     # Resolve dependencies for the Module.
     EXECUTE_PROCESS (COMMAND ${SAC2C_T} -M ${src} OUTPUT_VARIABLE dep_str OUTPUT_STRIP_TRAILING_WHITESPACE)
-    
+
     # XXX Currently this is correct, as sac2c always inserts '\n'.
     #     However, in case we ever support Windows, we might rethink this.
     STRING (REPLACE "\n" ";" dep_list "${dep_str}")
-    #MESSAGE ("Dependency list is ${dep_list}")
     RESOLVE_SAC_DEPENDENCIES ("${name}" "${SAC_SRC}" "${dep_list}" moddep_list)
-
-    #MESSAGE ("--- function returned ${moddep_list}")
 
     ADD_CUSTOM_COMMAND (
         OUTPUT ${mod} ${tree}
@@ -127,6 +124,12 @@ FOREACH (name ${SAC_SRC})
             ${SAC2C} -v0 -linksetsize 0 -o ${DLL_BUILD_DIR} ${src}
         DEPENDS ${moddep_list}
         COMMENT "Building ${name} module for target `${TARGET}'")
+    INSTALL (
+        FILES ${mod}
+        DESTINATION ${INSTALL_MOD_DIR}/${TARGET_ENV}/${SBI})
+    INSTALL (
+        FILES ${tree}
+        DESTINATION ${INSTALL_TREE_DIR}/tree/${TARGET_ENV})
     ADD_CUSTOM_TARGET (${TARGET}-module-${dst} ALL DEPENDS ${mod} ${tree})
 ENDFOREACH (name)
 

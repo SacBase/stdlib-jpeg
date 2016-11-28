@@ -23,6 +23,12 @@ ELSE ()
 
 ENDIF ()
 
+# Figure out where to install Tree files
+STRING (REGEX REPLACE ":.*$" "" INSTALL_TREE_DIR ${TREE_OUTPUTDIR})
+
+# Figure out where to instrall Mod files
+STRING (REGEX REPLACE ":.*$" "" INSTALL_MOD_DIR ${LIB_OUTPUTDIR})
+
 IF ("${SBI}" STREQUAL "XXXXX")
     MESSAGE (FATAL_ERROR "No SBI specification for target `${TARGET}', exiting...")
 ENDIF ()
