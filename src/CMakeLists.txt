@@ -42,7 +42,7 @@ FUNCTION (RESOLVE_SAC_DEPENDENCIES f local_sources dep_lst ret_name)
 
             # Check if the same name can be found amongst the sources of the
             # current package.
-            IF ("${n}.sac" IN_LIST ${local_file_list})
+            IF ("${n}.sac" IN_LIST local_file_list)
                 # If so, keep it as a dependency.
                 SET (d "${DLL_BUILD_DIR}/${TARGET_ENV}/${SBI}/${dep}")
                 LIST (APPEND ret ${d})
