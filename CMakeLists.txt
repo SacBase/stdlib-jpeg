@@ -17,7 +17,7 @@ SET (SAC2C_EXTRA_INC    ""          CACHE STRING "Extra include files that shoul
 
 
 # Check whether sac2c is operational
-INCLUDE ("cmake/check-sac2c.cmake")
+INCLUDE ("cmake-common/check-sac2c.cmake")
 
 # Check whether reqruired library is present on the system
 INCLUDE ("cmake/check-jpeg.cmake")

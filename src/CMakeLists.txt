@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 3.3)
-INCLUDE ("${CMAKE_SOURCE_DIR}/cmake/sac2c-variables.cmake")
-INCLUDE ("${CMAKE_SOURCE_DIR}/cmake/resolve-sac2c-dependencies.cmake")
+INCLUDE ("${CMAKE_SOURCE_DIR}/cmake-common/sac2c-variables.cmake")
+INCLUDE ("${CMAKE_SOURCE_DIR}/cmake-common/resolve-sac2c-dependencies.cmake")
 
 SET (C_DEPS_SRC
   c-deps/jpeg.c
