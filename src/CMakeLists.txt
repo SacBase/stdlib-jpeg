@@ -3,7 +3,7 @@ INCLUDE ("${CMAKE_SOURCE_DIR}/cmake-common/sac2c-variables.cmake")
 INCLUDE ("${CMAKE_SOURCE_DIR}/cmake-common/resolve-sac2c-dependencies.cmake")
 
 SET (C_DEPS_SRC
-  c-deps/jpeg.c
+    c-deps/jpeg.c
 )
 
 SET (SAC_SRC
@@ -38,13 +38,16 @@ FILE (MAKE_DIRECTORY "${DLL_BUILD_DIR}/${TARGET_ENV}/${SBI}")
 # For every sac file, compile Tree and Mod files.
 FOREACH (name ${SAC_SRC})
     SET (src "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
+    # sac2c requires computes objectfiles relatively to the working directory
+    # of the call to sac2c.
+    GET_FILENAME_COMPONENT (dir "${CMAKE_CURRENT_BINARY_DIR}/${name}" DIRECTORY)
     GET_FILENAME_COMPONENT (dst ${name} NAME_WE)
     SET (mod
         "${DLL_BUILD_DIR}/${TARGET_ENV}/${SBI}/lib${dst}Mod${MODEXT}")
     SET (tree
         "${DLL_BUILD_DIR}/tree/${TARGET_ENV}/lib${dst}Tree${TREE_DLLEXT}")
 
-    RESOLVE_SAC_DEPENDENCIES ("${src}" "${SAC_SRC}" moddep_list)
+    RESOLVE_SAC_DEPENDENCIES ("${name}" "${SAC_SRC}" moddep_list)
 
     MESSAGE ("dependencies of ${name} => `${moddep_list}'")
 
@@ -52,6 +55,8 @@ FOREACH (name ${SAC_SRC})
         OUTPUT ${mod} ${tree}
         COMMAND
             ${SAC2C} -v0 -linksetsize 0 -o ${DLL_BUILD_DIR} ${src}
+        WORKING_DIRECTORY
+            ${dir}
         DEPENDS ${moddep_list}
         COMMENT "Building ${name} module for target `${TARGET}'")
 
